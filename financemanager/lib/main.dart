@@ -1,122 +1,192 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MaterialApp(home: IncomeExpenseTracker()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Transaction {
+  final double amount;
+  final String category;
+  final DateTime date;
+  final String note;
+  final bool isIncome;
 
-  // This widget is the root of your application.
+  Transaction({
+    required this.amount,
+    required this.category,
+    required this.date,
+    required this.note,
+    required this.isIncome,
+  });
+}
+
+class IncomeExpenseTracker extends StatefulWidget {
+  const IncomeExpenseTracker({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+  State<IncomeExpenseTracker> createState() => _IncomeExpenseTrackerState();
+}
+
+class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
+  final List<Transaction> _transactions = [];
+  final _amountController = TextEditingController();
+  final _categoryController = TextEditingController();
+  final _noteController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
+  bool _isIncome = true;
+  int _currentPage = 0;
+
+  final int _transactionsPerPage = 10;
+
+  void _addTransaction() {
+    if (_amountController.text.isEmpty || _categoryController.text.isEmpty) return;
+
+    final newTx = Transaction(
+      amount: double.parse(_amountController.text),
+      category: _categoryController.text,
+      date: _selectedDate,
+      note: _noteController.text,
+      isIncome: _isIncome,
     );
-  }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _transactions.insert(0, newTx);
+      _clearInputs();
     });
   }
 
+  void _clearInputs() {
+    _amountController.clear();
+    _categoryController.clear();
+    _noteController.clear();
+    _selectedDate = DateTime.now();
+    _isIncome = true;
+  }
+
+  void _pickDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  List<Transaction> _paginatedTransactions() {
+    int start = _currentPage * _transactionsPerPage;
+    int end = start + _transactionsPerPage;
+    return _transactions.sublist(start, end > _transactions.length ? _transactions.length : end);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final paginatedTx = _paginatedTransactions();
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      appBar: AppBar(title: const Text('Income & Expense Tracker')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            // Input Form
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Amount'),
+            ),
+            TextField(
+              controller: _categoryController,
+              decoration: const InputDecoration(labelText: 'Category'),
+            ),
+            TextField(
+              controller: _noteController,
+              decoration: const InputDecoration(labelText: 'Note'),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Date: ${formatter.format(_selectedDate)}"),
+                TextButton(
+                  onPressed: _pickDate,
+                  child: const Text('Pick Date'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('Type:'),
+                Radio(
+                  value: true,
+                  groupValue: _isIncome,
+                  onChanged: (value) => setState(() => _isIncome = value!),
+                ),
+                const Text('Income'),
+                Radio(
+                  value: false,
+                  groupValue: _isIncome,
+                  onChanged: (value) => setState(() => _isIncome = value!),
+                ),
+                const Text('Expense'),
+              ],
+            ),
+            ElevatedButton(
+              onPressed: _addTransaction,
+              child: const Text('Add Transaction'),
+            ),
+            const SizedBox(height: 20),
+            // Transaction List
+            Expanded(
+              child: paginatedTx.isEmpty
+                  ? const Center(child: Text('No transactions yet.'))
+                  : ListView.builder(
+                      itemCount: paginatedTx.length,
+                      itemBuilder: (ctx, index) {
+                        final tx = paginatedTx[index];
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: tx.isIncome ? Colors.green : Colors.red,
+                              child: Text(
+                                tx.isIncome ? '+' : '-',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            title: Text('${tx.category} - \$${tx.amount.toStringAsFixed(2)}'),
+                            subtitle: Text('${formatter.format(tx.date)} | ${tx.note}'),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            // Pagination Controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: _currentPage > 0
+                      ? () => setState(() => _currentPage--)
+                      : null,
+                  child: const Text('Previous'),
+                ),
+                Text('Page ${_currentPage + 1}'),
+                TextButton(
+                  onPressed: (_currentPage + 1) * _transactionsPerPage < _transactions.length
+                      ? () => setState(() => _currentPage++)
+                      : null,
+                  child: const Text('Next'),
+                ),
+              ],
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
