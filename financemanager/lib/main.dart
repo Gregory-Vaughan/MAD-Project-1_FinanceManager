@@ -31,20 +31,24 @@ class IncomeExpenseTracker extends StatefulWidget {
 class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
   final List<Transaction> _transactions = [];
   final _amountController = TextEditingController();
-  final _categoryController = TextEditingController();
   final _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   bool _isIncome = true;
   int _currentPage = 0;
 
+  String? _selectedCategory;
+
   final int _transactionsPerPage = 10;
 
+  final List<String> _incomeCategories = ['dividends', 'work', 'business', 'transfer'];
+  final List<String> _expenseCategories = ['gas', 'shopping', 'groceries', 'miscellaneous', 'travel'];
+
   void _addTransaction() {
-    if (_amountController.text.isEmpty || _categoryController.text.isEmpty) return;
+    if (_amountController.text.isEmpty || _selectedCategory == null) return;
 
     final newTx = Transaction(
       amount: double.parse(_amountController.text),
-      category: _categoryController.text,
+      category: _selectedCategory!,
       date: _selectedDate,
       note: _noteController.text,
       isIncome: _isIncome,
@@ -58,10 +62,10 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
 
   void _clearInputs() {
     _amountController.clear();
-    _categoryController.clear();
     _noteController.clear();
     _selectedDate = DateTime.now();
     _isIncome = true;
+    _selectedCategory = null;
   }
 
   void _pickDate() async {
@@ -89,6 +93,8 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final paginatedTx = _paginatedTransactions();
 
+    final categoryOptions = _isIncome ? _incomeCategories : _expenseCategories;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Income & Expense Tracker')),
       body: Padding(
@@ -101,8 +107,12 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Amount'),
             ),
-            TextField(
-              controller: _categoryController,
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              items: categoryOptions
+                  .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+                  .toList(),
+              onChanged: (value) => setState(() => _selectedCategory = value),
               decoration: const InputDecoration(labelText: 'Category'),
             ),
             TextField(
@@ -125,13 +135,23 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
                 Radio(
                   value: true,
                   groupValue: _isIncome,
-                  onChanged: (value) => setState(() => _isIncome = value!),
+                  onChanged: (value) {
+                    setState(() {
+                      _isIncome = value!;
+                      _selectedCategory = null;
+                    });
+                  },
                 ),
                 const Text('Income'),
                 Radio(
                   value: false,
                   groupValue: _isIncome,
-                  onChanged: (value) => setState(() => _isIncome = value!),
+                  onChanged: (value) {
+                    setState(() {
+                      _isIncome = value!;
+                      _selectedCategory = null;
+                    });
+                  },
                 ),
                 const Text('Expense'),
               ],
