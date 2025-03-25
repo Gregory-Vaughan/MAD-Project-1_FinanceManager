@@ -33,25 +33,25 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  bool _isIncome = true;
+  bool? _isIncome; // Initially null until user selects type
   int _currentPage = 0;
 
   String? _selectedCategory;
 
   final int _transactionsPerPage = 10;
 
-  final List<String> _incomeCategories = ['dividends', 'work', 'business', 'transfer'];
-  final List<String> _expenseCategories = ['gas', 'shopping', 'groceries', 'miscellaneous', 'travel'];
+  final List<String> _incomeCategories = ['dividends', 'work', 'business', 'transfer', 'Other'];
+  final List<String> _expenseCategories = ['gas', 'shopping', 'groceries', 'Other', 'travel'];
 
   void _addTransaction() {
-    if (_amountController.text.isEmpty || _selectedCategory == null) return;
+    if (_amountController.text.isEmpty || _selectedCategory == null || _isIncome == null) return;
 
     final newTx = Transaction(
       amount: double.parse(_amountController.text),
       category: _selectedCategory!,
       date: _selectedDate,
       note: _noteController.text,
-      isIncome: _isIncome,
+      isIncome: _isIncome!,
     );
 
     setState(() {
@@ -64,7 +64,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
     _amountController.clear();
     _noteController.clear();
     _selectedDate = DateTime.now();
-    _isIncome = true;
+    _isIncome = null;
     _selectedCategory = null;
   }
 
@@ -75,7 +75,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
         _selectedDate = picked;
       });
@@ -93,7 +93,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final paginatedTx = _paginatedTransactions();
 
-    final categoryOptions = _isIncome ? _incomeCategories : _expenseCategories;
+    final categoryOptions = _isIncome == true ? _incomeCategories : _expenseCategories;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Income & Expense Tracker')),
@@ -101,24 +101,47 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Input Form
+            // Amount Input
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Amount'),
             ),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              items: categoryOptions
-                  .map((category) => DropdownMenuItem(value: category, child: Text(category)))
-                  .toList(),
-              onChanged: (value) => setState(() => _selectedCategory = value),
-              decoration: const InputDecoration(labelText: 'Category'),
+
+            // Type Dropdown (Income/Expense)
+            DropdownButtonFormField<bool>(
+              value: _isIncome,
+              decoration: const InputDecoration(labelText: 'Type'),
+              items: const [
+                DropdownMenuItem(value: true, child: Text('Income')),
+                DropdownMenuItem(value: false, child: Text('Expense')),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _isIncome = value;
+                  _selectedCategory = null;
+                });
+              },
             ),
+
+            // Category Dropdown - only shows if Type is selected
+            if (_isIncome != null)
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: categoryOptions
+                    .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedCategory = value),
+              ),
+
+            // Note Input
             TextField(
               controller: _noteController,
               decoration: const InputDecoration(labelText: 'Note'),
             ),
+
+            // Date Picker
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -129,38 +152,14 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
                 ),
               ],
             ),
-            Row(
-              children: [
-                const Text('Type:'),
-                Radio(
-                  value: true,
-                  groupValue: _isIncome,
-                  onChanged: (value) {
-                    setState(() {
-                      _isIncome = value!;
-                      _selectedCategory = null;
-                    });
-                  },
-                ),
-                const Text('Income'),
-                Radio(
-                  value: false,
-                  groupValue: _isIncome,
-                  onChanged: (value) {
-                    setState(() {
-                      _isIncome = value!;
-                      _selectedCategory = null;
-                    });
-                  },
-                ),
-                const Text('Expense'),
-              ],
-            ),
+
+            // Add Transaction Button
             ElevatedButton(
               onPressed: _addTransaction,
               child: const Text('Add Transaction'),
             ),
             const SizedBox(height: 20),
+
             // Transaction List
             Expanded(
               child: paginatedTx.isEmpty
@@ -185,6 +184,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
                       },
                     ),
             ),
+
             // Pagination Controls
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
