@@ -37,8 +37,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
   int _currentPage = 0;
 
   String? _selectedCategory;
-
-  final int _transactionsPerPage = 10;
+  final int _transactionsPerPage = 20;
 
   final List<String> _incomeCategories = ['Dividends', 'Work', 'Business', 'Crypto', 'Transfer', 'Other'];
   final List<String> _expenseCategories = ['Gas', 'Shopping', 'Restaurant', 'Groceries', 'Other', 'Travel'];
@@ -108,146 +107,143 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Income & Expense Tracker')),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Amount Input
-              TextField(
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Amount'),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Amount Input
+            TextField(
+              controller: _amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Amount'),
+            ),
+
+            // Type Dropdown
+            DropdownButtonFormField<bool>(
+              value: _isIncome,
+              decoration: const InputDecoration(labelText: 'Transaction Type'),
+              items: const [
+                DropdownMenuItem(value: true, child: Text('Income')),
+                DropdownMenuItem(value: false, child: Text('Expense')),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _isIncome = value;
+                  _selectedCategory = null;
+                });
+              },
+            ),
+
+            // Category Dropdown
+            if (_isIncome != null)
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(labelText: 'Category'),
+                items: categoryOptions
+                    .map((category) => DropdownMenuItem(value: category, child: Text(category)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedCategory = value),
               ),
 
-              // Type Dropdown
-              DropdownButtonFormField<bool>(
-                value: _isIncome,
-                decoration: const InputDecoration(labelText: 'Transaction Type'),
-                items: const [
-                  DropdownMenuItem(value: true, child: Text('Income')),
-                  DropdownMenuItem(value: false, child: Text('Expense')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _isIncome = value;
-                    _selectedCategory = null;
-                  });
-                },
-              ),
+            // Note Input
+            TextField(
+              controller: _noteController,
+              decoration: const InputDecoration(labelText: 'Note'),
+            ),
 
-              // Category Dropdown - only shows if Type is selected
-              if (_isIncome != null)
-                DropdownButtonFormField<String>(
-                  value: _selectedCategory,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: categoryOptions
-                      .map((category) => DropdownMenuItem(value: category, child: Text(category)))
-                      .toList(),
-                  onChanged: (value) => setState(() => _selectedCategory = value),
+            // Date Picker
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Date: ${formatter.format(_selectedDate)}"),
+                TextButton(
+                  onPressed: _pickDate,
+                  child: const Text('Pick Date'),
                 ),
+              ],
+            ),
 
-              // Note Input
-              TextField(
-                controller: _noteController,
-                decoration: const InputDecoration(labelText: 'Note'),
-              ),
+            // Add Transaction Button
+            ElevatedButton(
+              onPressed: _addTransaction,
+              child: const Text('Add Transaction'),
+            ),
 
-              // Date Picker
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Date: ${formatter.format(_selectedDate)}"),
-                  TextButton(
-                    onPressed: _pickDate,
-                    child: const Text('Pick Date'),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 20),
 
-              // Add Transaction Button
-              ElevatedButton(
-                onPressed: _addTransaction,
-                child: const Text('Add Transaction'),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Totals Section
-              Card(
-                color: Colors.grey[200],
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Text('Total Income: \$${totalIncome.toStringAsFixed(2)}',
-                          style: const TextStyle(color: Colors.green, fontSize: 16)),
-                      Text('Total Expense: \$${totalExpense.toStringAsFixed(2)}',
-                          style: const TextStyle(color: Colors.red, fontSize: 16)),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Balance: \$${netBalance.toStringAsFixed(2)}',
-                        style: TextStyle(
-                            color: netBalance >= 0 ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18),
-                      ),
-                    ],
-                  ),
+            // Totals Section
+            Card(
+              color: Colors.grey[200],
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Text('Total Income: \$${totalIncome.toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.green, fontSize: 16)),
+                    Text('Total Expense: \$${totalExpense.toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.red, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Balance: \$${netBalance.toStringAsFixed(2)}',
+                      style: TextStyle(
+                          color: netBalance >= 0 ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-              const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-              // Transaction List with Scrollable Container
-              SizedBox(
-                height: 400, // Adjust based on your screen size
-                child: paginatedTx.isEmpty
-                    ? const Center(child: Text('No transactions yet.'))
-                    : ListView.builder(
-                        itemCount: paginatedTx.length,
-                        itemBuilder: (ctx, index) {
-                          final tx = paginatedTx[index];
-                          return Card(
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: tx.isIncome ? Colors.green : Colors.red,
-                                child: Text(
-                                  tx.isIncome ? '+' : '-',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
+            // Transaction List with scroll
+            Expanded(
+              child: paginatedTx.isEmpty
+                  ? const Center(child: Text('No transactions yet.'))
+                  : ListView.builder(
+                      itemCount: paginatedTx.length,
+                      itemBuilder: (ctx, index) {
+                        final tx = paginatedTx[index];
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: tx.isIncome ? Colors.green : Colors.red,
+                              child: Text(
+                                tx.isIncome ? '+' : '-',
+                                style: const TextStyle(color: Colors.white),
                               ),
-                              title: Text('${tx.category} - \$${tx.amount.toStringAsFixed(2)}'),
-                              subtitle: Text('${formatter.format(tx.date)} | ${tx.note}'),
                             ),
-                          );
-                        },
-                      ),
-              ),
+                            title: Text('${tx.category} - \$${tx.amount.toStringAsFixed(2)}'),
+                            subtitle: Text('${formatter.format(tx.date)} | ${tx.note}'),
+                          ),
+                        );
+                      },
+                    ),
+            ),
 
-              const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-              // Pagination Controls
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: _currentPage > 0
-                        ? () => setState(() => _currentPage--)
-                        : null,
-                    child: const Text('Previous'),
-                  ),
-                  Text('Page ${_currentPage + 1}'),
-                  TextButton(
-                    onPressed: (_currentPage + 1) * _transactionsPerPage < _transactions.length
-                        ? () => setState(() => _currentPage++)
-                        : null,
-                    child: const Text('Next'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            // Pagination Controls Always Visible
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: _currentPage > 0
+                      ? () => setState(() => _currentPage--)
+                      : null,
+                  child: const Text('Previous'),
+                ),
+                Text('Page ${_currentPage + 1}'),
+                TextButton(
+                  onPressed: (_currentPage + 1) * _transactionsPerPage < _transactions.length
+                      ? () => setState(() => _currentPage++)
+                      : null,
+                  child: const Text('Next'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
