@@ -5,6 +5,7 @@ void main() {
   runApp(const MaterialApp(home: IncomeExpenseTracker()));
 }
 
+// ---------------------- Models ----------------------
 class Transaction {
   final double amount;
   final String category;
@@ -35,7 +36,7 @@ class SavingsGoal {
   });
 }
 
-
+// ---------------------- Main Screen ----------------------
 class IncomeExpenseTracker extends StatefulWidget {
   const IncomeExpenseTracker({super.key});
 
@@ -45,18 +46,18 @@ class IncomeExpenseTracker extends StatefulWidget {
 
 class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
   final List<Transaction> _transactions = [];
+  final List<SavingsGoal> _savingsGoals = [];
+
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   bool? _isIncome;
-  int _currentPage = 0;
-
   String? _selectedCategory;
+  int _currentPage = 0;
   final int _transactionsPerPage = 20;
 
   final List<String> _incomeCategories = ['Dividends', 'Work', 'Business', 'Crypto', 'Transfer', 'Other'];
   final List<String> _expenseCategories = ['Gas', 'Shopping', 'Restaurant', 'Groceries', 'Other', 'Travel'];
-  final List<SavingsGoal> _savingsGoals = ['Medical Emergencies', 'Vacation', 'Retirement', 'College Fund', 'Home Maintainince', 'Other'];
 
   void _addTransaction() {
     if (_amountController.text.isEmpty || _selectedCategory == null || _isIncome == null) return;
@@ -97,22 +98,16 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
     }
   }
 
-  double _totalIncome() {
-    return _transactions.where((tx) => tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
-  }
-
-  double _totalExpense() {
-    return _transactions.where((tx) => !tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
-  }
+  double _totalIncome() => _transactions.where((tx) => tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
+  double _totalExpense() => _transactions.where((tx) => !tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
 
   List<Transaction> _paginatedTransactions() {
     int start = _currentPage * _transactionsPerPage;
     int end = start + _transactionsPerPage;
     return _transactions.sublist(start, end > _transactions.length ? _transactions.length : end);
-   }
+  }
 
-/*
-void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
+  void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
     setState(() {
       _savingsGoals.add(SavingsGoal(name: name, targetAmount: targetAmount, targetDate: targetDate));
     });
@@ -124,7 +119,6 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
     });
   }
 
-  // Navigation to Savings Goals Screen (NEW)
   void _navigateToSavingsGoals(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -136,7 +130,6 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
       ),
     );
   }
-*/
 
   @override
   Widget build(BuildContext context) {
@@ -145,23 +138,28 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
     final totalIncome = _totalIncome();
     final totalExpense = _totalExpense();
     final netBalance = totalIncome - totalExpense;
-
     final categoryOptions = _isIncome == true ? _incomeCategories : _expenseCategories;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Income & Expense Tracker')),
+      appBar: AppBar(
+        title: const Text('Income & Expense Tracker'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.savings),
+            tooltip: "Savings Goals",
+            onPressed: () => _navigateToSavingsGoals(context),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Amount Input
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Amount'),
             ),
-
-            // Type Dropdown
             DropdownButtonFormField<bool>(
               value: _isIncome,
               decoration: const InputDecoration(labelText: 'Transaction Type'),
@@ -176,8 +174,6 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
                 });
               },
             ),
-
-            // Category Dropdown
             if (_isIncome != null)
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
@@ -187,14 +183,10 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
                     .toList(),
                 onChanged: (value) => setState(() => _selectedCategory = value),
               ),
-
-            // Note Input
             TextField(
               controller: _noteController,
               decoration: const InputDecoration(labelText: 'Note'),
             ),
-
-            // Date Picker
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -205,16 +197,11 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
                 ),
               ],
             ),
-
-            // Add Transaction Button
             ElevatedButton(
               onPressed: _addTransaction,
               child: const Text('Add Transaction'),
             ),
-
             const SizedBox(height: 20),
-
-            // Totals Section
             Card(
               color: Colors.grey[200],
               child: Padding(
@@ -237,10 +224,7 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
                 ),
               ),
             ),
-
             const SizedBox(height: 10),
-
-            // Transaction List with scroll
             Expanded(
               child: paginatedTx.isEmpty
                   ? const Center(child: Text('No transactions yet.'))
@@ -264,10 +248,7 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
                       },
                     ),
             ),
-
             const SizedBox(height: 10),
-
-            // Pagination Controls Always Visible
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -290,8 +271,11 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
         ),
       ),
     );
-    /*
-    class SavingsGoalsScreen extends StatelessWidget {
+  }
+}
+
+// ---------------------- Savings Goal Screen ----------------------
+class SavingsGoalsScreen extends StatelessWidget {
   final List<SavingsGoal> savingsGoals;
   final Function(String, double, DateTime) onAddGoal;
   final Function(int, double) onUpdateSavedAmount;
@@ -312,62 +296,62 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
     void _showAddGoalDialog() {
       showDialog(
         context: context,
-        builder: (ctx) {
-          return AlertDialog(
-            title: const Text("Add New Savings Goal"),
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: "Goal Name"),
-                  ),
-                  TextField(
-                    controller: amountController,
-                    decoration: const InputDecoration(labelText: "Target Amount"),
-                    keyboardType: TextInputType.number,
-                  ),
-                  Row(
-                    children: [
-                      Text("Target Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
-                      TextButton(
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: selectedDate,
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(2100),
-                          );
-                          if (picked != null) {
-                            selectedDate = picked;
-                          }
-                        },
-                        child: const Text("Pick Date"),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+        builder: (ctx) => AlertDialog(
+          title: const Text("Add New Savings Goal"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: "Goal Name"),
+                ),
+                TextField(
+                  controller: amountController,
+                  decoration: const InputDecoration(labelText: "Target Amount"),
+                  keyboardType: TextInputType.number,
+                ),
+                Row(
+                  children: [
+                    Text("Target Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
+                    TextButton(
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          selectedDate = picked;
+                        }
+                      },
+                      child: const Text("Pick Date"),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text("Cancel"),
-              ),
-              TextButton(
-                onPressed: () {
-                  onAddGoal(
-                    nameController.text,
-                    double.parse(amountController.text),
-                    selectedDate,
-                  );
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text("Add"),
-              ),
-            ],
-          );
-        },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                onAddGoal(
+                  nameController.text,
+                  double.parse(amountController.text),
+                  selectedDate,
+                );
+                Navigator.of(ctx).pop();
+                (context as Element).markNeedsBuild(); // Triggers widget rebuild
+              },
+
+              child: const Text("Add"),
+            ),
+          ],
+        ),
       );
     }
 
@@ -385,7 +369,6 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
               trailing: IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () {
-                  // Add to saved amount
                   showDialog(
                     context: context,
                     builder: (ctx) {
@@ -424,8 +407,5 @@ void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
         child: const Icon(Icons.add),
       ),
     );
-  }
-}
-    */
   }
 }
