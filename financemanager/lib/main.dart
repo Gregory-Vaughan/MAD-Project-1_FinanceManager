@@ -466,11 +466,14 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
 // ---------------------- Dashboard Screen ---------------------
 
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final db = DatabaseHelper();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Welcome to Finance Manager')),
       body: Padding(
@@ -495,9 +498,29 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => SavingsGoalsScreen(
-                      savingsGoals: const [], // Replace with shared or injected list if needed
-                      onAddGoal: (name, amount, date) {},
-                      onUpdateSavedAmount: (index, amount) {},
+                      savingsGoals: db.savingsGoals,
+                      onAddGoal: (name, amount, date) {
+                        db.addSavingsGoal(SavingsGoal(
+                          name: name,
+                          targetAmount: amount,
+                          targetDate: date,
+                        ));
+                      },
+                      onUpdateSavedAmount: db.updateSavedAmount,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.pie_chart),
+              label: const Text('Category Tracking'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CategoryTrackingScreen(
+                      transactions: db.transactions,
                     ),
                   ),
                 );
@@ -509,7 +532,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
-// ---------------------- Category Tracking Screen  ----------------------
+
+// ---------------------- Category Tracking Screen ----------------------
 class CategoryTrackingScreen extends StatelessWidget {
   final List<Transaction> transactions;
 
