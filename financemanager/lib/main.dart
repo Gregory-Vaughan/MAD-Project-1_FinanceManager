@@ -1,40 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'database_helper.dart';
+import 'models/transaction.dart';
+import 'models/savings_goal.dart';
 
 void main() {
   runApp(const MaterialApp(home: DashboardScreen()));
-}
-
-
-// ---------------------- Models ----------------------
-class Transaction {
-  final double amount;
-  final String category;
-  final DateTime date;
-  final String note;
-  final bool isIncome;
-
-  Transaction({
-    required this.amount,
-    required this.category,
-    required this.date,
-    required this.note,
-    required this.isIncome,
-  });
-}
-
-class SavingsGoal {
-  String name;
-  double targetAmount;
-  DateTime targetDate;
-  double savedAmount;
-
-  SavingsGoal({
-    required this.name,
-    required this.targetAmount,
-    required this.targetDate,
-    this.savedAmount = 0.0,
-  });
 }
 
 // ---------------------- Main Screen ----------------------
@@ -46,8 +17,7 @@ class IncomeExpenseTracker extends StatefulWidget {
 }
 
 class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
-  final List<Transaction> _transactions = [];
-  final List<SavingsGoal> _savingsGoals = [];
+  final db = DatabaseHelper();
 
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
@@ -72,7 +42,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
     );
 
     setState(() {
-      _transactions.insert(0, newTx);
+      db.addTransaction(newTx);
       _clearInputs();
     });
   }
@@ -99,38 +69,32 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
     }
   }
 
-  double _totalIncome() => _transactions.where((tx) => tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
-  double _totalExpense() => _transactions.where((tx) => !tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
+  double _totalIncome() => db.transactions.where((tx) => tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
+  double _totalExpense() => db.transactions.where((tx) => !tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
 
   List<Transaction> _paginatedTransactions() {
     int start = _currentPage * _transactionsPerPage;
     int end = start + _transactionsPerPage;
-    return _transactions.sublist(start, end > _transactions.length ? _transactions.length : end);
+    return db.transactions.sublist(start, end > db.transactions.length ? db.transactions.length : end);
   }
 
-  void _addSavingsGoal(String name, double targetAmount, DateTime targetDate) {
-    setState(() {
-      _savingsGoals.add(SavingsGoal(name: name, targetAmount: targetAmount, targetDate: targetDate));
-    });
-  }
-
-  void _updateSavedAmount(int index, double amount) {
-    setState(() {
-      _savingsGoals[index].savedAmount += amount;
-    });
-  }
-
-  void _navigateToSavingsGoals(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (ctx) => SavingsGoalsScreen(
-          savingsGoals: _savingsGoals,
-          onAddGoal: _addSavingsGoal,
-          onUpdateSavedAmount: _updateSavedAmount,
-        ),
+void _navigateToSavingsGoals(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (ctx) => SavingsGoalsScreen(
+        savingsGoals: db.savingsGoals,
+        onAddGoal: (name, amount, date) {
+          db.addSavingsGoal(SavingsGoal(
+            name: name,
+            targetAmount: amount,
+            targetDate: date,
+          ));
+        },
+        onUpdateSavedAmount: db.updateSavedAmount,
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +225,8 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
                 ),
                 Text('Page ${_currentPage + 1}'),
                 TextButton(
-                  onPressed: (_currentPage + 1) * _transactionsPerPage < _transactions.length
+                  onPressed: (_currentPage + 1) * _transactionsPerPage < db.transactions.length
+
                       ? () => setState(() => _currentPage++)
                       : null,
                   child: const Text('Next'),
@@ -364,7 +329,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
               setState(() {
                 if (isEditing) {
-                  final goal = widget.savingsGoals[editIndex!];
+                  final goal = widget.savingsGoals[editIndex];
                   goal.name = name;
                   goal.targetAmount = amount;
                   goal.targetDate = _selectedDate;
@@ -541,6 +506,84 @@ class DashboardScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+// ---------------------- Category Tracking Screen  ----------------------
+class CategoryTrackingScreen extends StatelessWidget {
+  final List<Transaction> transactions;
+
+  const CategoryTrackingScreen({super.key, required this.transactions});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final ranges = {
+      'This Week': now.subtract(Duration(days: now.weekday - 1)),
+      'This Month': DateTime(now.year, now.month, 1),
+      'This Year': DateTime(now.year, 1, 1),
+      'All Time': DateTime(2000),
+    };
+
+    String selectedRange = 'This Month';
+    DateTime rangeStart = ranges[selectedRange]!;
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        final filtered = transactions
+            .where((tx) => tx.date.isAfter(rangeStart) || selectedRange == 'All Time')
+            .toList();
+
+        final incomeCategories = <String, double>{};
+        final expenseCategories = <String, double>{};
+
+        for (var tx in filtered) {
+          final map = tx.isIncome ? incomeCategories : expenseCategories;
+          map[tx.category] = (map[tx.category] ?? 0) + tx.amount;
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: const Text("Category Tracking")),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                DropdownButton<String>(
+                  value: selectedRange,
+                  isExpanded: true,
+                  items: ranges.keys
+                      .map((label) => DropdownMenuItem(value: label, child: Text(label)))
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedRange = val!;
+                      rangeStart = ranges[val]!;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      const Text("Expenses by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ...expenseCategories.entries.map((e) => ListTile(
+                            title: Text(e.key),
+                            trailing: Text("- \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.red)),
+                          )),
+                      const SizedBox(height: 16),
+                      const Text("Income by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ...incomeCategories.entries.map((e) => ListTile(
+                            title: Text(e.key),
+                            trailing: Text("+ \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.green)),
+                          )),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
