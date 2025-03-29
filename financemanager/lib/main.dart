@@ -108,13 +108,6 @@ void _navigateToSavingsGoals(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Income & Expense Tracker'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.savings),
-            tooltip: "Savings Goals",
-            onPressed: () => _navigateToSavingsGoals(context),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -232,13 +225,13 @@ void _navigateToSavingsGoals(BuildContext context) {
                   child: const Text('Next'),
                 ),
               ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
 // ---------------------- Savings Goal Screen ----------------------
 class SavingsGoalsScreen extends StatefulWidget {
@@ -329,7 +322,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
               setState(() {
                 if (isEditing) {
-                  final goal = widget.savingsGoals[editIndex];
+                  final goal = widget.savingsGoals[editIndex!];
                   goal.name = name;
                   goal.targetAmount = amount;
                   goal.targetDate = _selectedDate;
@@ -368,8 +361,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
             onPressed: () {
               final amount = double.tryParse(savedAmountController.text);
               if (amount != null && amount > 0) {
-                widget.onUpdateSavedAmount(index, amount);
-                setState(() {});
+                setState(() {
+                  widget.onUpdateSavedAmount(index, amount);
+                });
               }
               Navigator.of(ctx).pop();
             },
@@ -394,7 +388,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
           TextButton(
             onPressed: () {
               setState(() {
-                widget.savingsGoals.removeAt(index);
+                DatabaseHelper().deleteSavingsGoal(index);
               });
               Navigator.of(ctx).pop();
             },
@@ -407,14 +401,16 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final savingsGoals = DatabaseHelper().savingsGoals;
+
     return Scaffold(
       appBar: AppBar(title: const Text("Savings Goals")),
-      body: widget.savingsGoals.isEmpty
+      body: savingsGoals.isEmpty
           ? const Center(child: Text("No savings goals added."))
           : ListView.builder(
-              itemCount: widget.savingsGoals.length,
+              itemCount: savingsGoals.length,
               itemBuilder: (ctx, index) {
-                final goal = widget.savingsGoals[index];
+                final goal = savingsGoals[index];
                 final isCompleted = goal.savedAmount >= goal.targetAmount;
                 final percent = (goal.savedAmount / goal.targetAmount * 100).clamp(0, 100);
 
@@ -428,7 +424,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                         Text("Saved: \$${goal.savedAmount.toStringAsFixed(2)}"),
                         Text("Due: ${DateFormat('yyyy-MM-dd').format(goal.targetDate)}"),
                         Text(
-                          isCompleted ? "Status: ✅ Completed" : "Progress: ${percent.toStringAsFixed(1)}%",
+                          isCompleted
+                              ? "Status: ✅ Completed"
+                              : "Progress: ${percent.toStringAsFixed(1)}%",
                           style: TextStyle(
                             color: isCompleted ? Colors.green : Colors.blueGrey,
                             fontWeight: FontWeight.bold,
@@ -465,8 +463,6 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 }
 
 // ---------------------- Dashboard Screen ---------------------
-
-
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
