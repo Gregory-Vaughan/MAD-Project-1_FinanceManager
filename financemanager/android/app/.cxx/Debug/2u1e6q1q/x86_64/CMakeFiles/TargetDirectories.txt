@@ -1,0 +1,2 @@
+C:/Users/gpv52/Desktop/MAD/MAD-Project-1_FinanceManager/financemanager/android/app/.cxx/Debug/2u1e6q1q/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/gpv52/Desktop/MAD/MAD-Project-1_FinanceManager/financemanager/android/app/.cxx/Debug/2u1e6q1q/x86_64/CMakeFiles/rebuild_cache.dir

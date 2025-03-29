@@ -20,7 +20,7 @@ class Transaction {
     required this.isIncome,
   });
 }
-/*
+
 class SavingsGoal {
   final String name;
   final double targetAmount;
@@ -34,7 +34,7 @@ class SavingsGoal {
     this.savedAmount = 0.0,
   });
 }
-*/
+
 
 class IncomeExpenseTracker extends StatefulWidget {
   const IncomeExpenseTracker({super.key});
@@ -56,7 +56,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
 
   final List<String> _incomeCategories = ['Dividends', 'Work', 'Business', 'Crypto', 'Transfer', 'Other'];
   final List<String> _expenseCategories = ['Gas', 'Shopping', 'Restaurant', 'Groceries', 'Other', 'Travel'];
-//final List<SavingsGoal> _savingsGoals = [];
+  final List<SavingsGoal> _savingsGoals = ['Medical Emergencies', 'Vacation', 'Retirement', 'College Fund', 'Home Maintainince', 'Other'];
 
   void _addTransaction() {
     if (_amountController.text.isEmpty || _selectedCategory == null || _isIncome == null) return;
