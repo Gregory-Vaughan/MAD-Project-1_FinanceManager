@@ -23,9 +23,9 @@ class Transaction {
 }
 
 class SavingsGoal {
-  final String name;
-  final double targetAmount;
-  final DateTime targetDate;
+  String name;
+  double targetAmount;
+  DateTime targetDate;
   double savedAmount;
 
   SavingsGoal({
@@ -275,7 +275,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
 }
 
 // ---------------------- Savings Goal Screen ----------------------
-class SavingsGoalsScreen extends StatelessWidget {
+class SavingsGoalsScreen extends StatefulWidget {
   final List<SavingsGoal> savingsGoals;
   final Function(String, double, DateTime) onAddGoal;
   final Function(int, double) onUpdateSavedAmount;
@@ -288,122 +288,210 @@ class SavingsGoalsScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController amountController = TextEditingController();
-    DateTime selectedDate = DateTime.now();
+  State<SavingsGoalsScreen> createState() => _SavingsGoalsScreenState();
+}
 
-    void _showAddGoalDialog() {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text("Add New Savings Goal"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: "Goal Name"),
-                ),
-                TextField(
-                  controller: amountController,
-                  decoration: const InputDecoration(labelText: "Target Amount"),
-                  keyboardType: TextInputType.number,
-                ),
-                Row(
-                  children: [
-                    Text("Target Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
-                    TextButton(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) {
-                          selectedDate = picked;
-                        }
-                      },
-                      child: const Text("Pick Date"),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                onAddGoal(
-                  nameController.text,
-                  double.parse(amountController.text),
-                  selectedDate,
-                );
-                Navigator.of(ctx).pop();
-                (context as Element).markNeedsBuild(); // Triggers widget rebuild
-              },
+class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
 
-              child: const Text("Add"),
-            ),
-          ],
-        ),
-      );
+  void _showAddGoalDialog({int? editIndex}) {
+    final isEditing = editIndex != null;
+
+    if (isEditing) {
+      final goal = widget.savingsGoals[editIndex];
+      _nameController.text = goal.name;
+      _amountController.text = goal.targetAmount.toString();
+      _selectedDate = goal.targetDate;
+    } else {
+      _nameController.clear();
+      _amountController.clear();
+      _selectedDate = DateTime.now();
     }
 
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isEditing ? "Edit Goal" : "Add New Savings Goal"),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: "Goal Name"),
+              ),
+              TextField(
+                controller: _amountController,
+                decoration: const InputDecoration(labelText: "Target Amount"),
+                keyboardType: TextInputType.number,
+              ),
+              Row(
+                children: [
+                  Text("Target Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}"),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _selectedDate = picked;
+                        });
+                      }
+                    },
+                    child: const Text("Pick Date"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = _nameController.text;
+              final amount = double.tryParse(_amountController.text);
+              if (name.isEmpty || amount == null) return;
+
+              setState(() {
+                if (isEditing) {
+                  final goal = widget.savingsGoals[editIndex!];
+                  goal.name = name;
+                  goal.targetAmount = amount;
+                  goal.targetDate = _selectedDate;
+                } else {
+                  widget.onAddGoal(name, amount, _selectedDate);
+                }
+              });
+
+              Navigator.of(ctx).pop();
+            },
+            child: Text(isEditing ? "Save" : "Add"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddAmountDialog(int index) {
+    final TextEditingController savedAmountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Add to Saved Amount"),
+        content: TextField(
+          controller: savedAmountController,
+          decoration: const InputDecoration(labelText: "Amount"),
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              final amount = double.tryParse(savedAmountController.text);
+              if (amount != null && amount > 0) {
+                widget.onUpdateSavedAmount(index, amount);
+                setState(() {});
+              }
+              Navigator.of(ctx).pop();
+            },
+            child: const Text("Add"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteGoal(int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete Goal"),
+        content: const Text("Are you sure you want to delete this goal?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                widget.savingsGoals.removeAt(index);
+              });
+              Navigator.of(ctx).pop();
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Savings Goals")),
-      body: ListView.builder(
-        itemCount: savingsGoals.length,
-        itemBuilder: (ctx, index) {
-          final goal = savingsGoals[index];
-          return Card(
-            child: ListTile(
-              title: Text(goal.name),
-              subtitle: Text(
-                  "Target: \$${goal.targetAmount.toStringAsFixed(2)}\nSaved: \$${goal.savedAmount.toStringAsFixed(2)}\nDue: ${DateFormat('yyyy-MM-dd').format(goal.targetDate)}"),
-              trailing: IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) {
-                      final TextEditingController savedAmountController = TextEditingController();
-                      return AlertDialog(
-                        title: const Text("Add to Saved Amount"),
-                        content: TextField(
-                          controller: savedAmountController,
-                          decoration: const InputDecoration(labelText: "Amount"),
-                          keyboardType: TextInputType.number,
+      body: widget.savingsGoals.isEmpty
+          ? const Center(child: Text("No savings goals added."))
+          : ListView.builder(
+              itemCount: widget.savingsGoals.length,
+              itemBuilder: (ctx, index) {
+                final goal = widget.savingsGoals[index];
+                final isCompleted = goal.savedAmount >= goal.targetAmount;
+                final percent = (goal.savedAmount / goal.targetAmount * 100).clamp(0, 100);
+
+                return Card(
+                  child: ListTile(
+                    title: Text(goal.name),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Target: \$${goal.targetAmount.toStringAsFixed(2)}"),
+                        Text("Saved: \$${goal.savedAmount.toStringAsFixed(2)}"),
+                        Text("Due: ${DateFormat('yyyy-MM-dd').format(goal.targetDate)}"),
+                        Text(
+                          isCompleted ? "Status: ✅ Completed" : "Progress: ${percent.toStringAsFixed(1)}%",
+                          style: TextStyle(
+                            color: isCompleted ? Colors.green : Colors.blueGrey,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              onUpdateSavedAmount(index, double.parse(savedAmountController.text));
-                              Navigator.of(ctx).pop();
-                            },
-                            child: const Text("Add"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
+                      ],
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _showAddGoalDialog(editIndex: index);
+                        } else if (value == 'delete') {
+                          _deleteGoal(index);
+                        } else if (value == 'save') {
+                          _showAddAmountDialog(index);
+                        }
+                      },
+                      itemBuilder: (ctx) => [
+                        const PopupMenuItem(value: 'save', child: Text('Add Amount')),
+                        const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                        const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddGoalDialog,
+        onPressed: () => _showAddGoalDialog(),
         child: const Icon(Icons.add),
       ),
     );
