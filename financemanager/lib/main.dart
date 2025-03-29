@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 void main() {
-  runApp(const MaterialApp(home: IncomeExpenseTracker()));
+  runApp(const MaterialApp(home: DashboardScreen()));
 }
+
 
 // ---------------------- Models ----------------------
 class Transaction {
@@ -493,6 +494,52 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddGoalDialog(),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+// ---------------------- Dashboard Screen ---------------------
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Welcome to Finance Manager')),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(Icons.account_balance_wallet),
+              label: const Text('Income & Expense Tracker'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const IncomeExpenseTracker()),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.savings),
+              label: const Text('Savings Goals'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => SavingsGoalsScreen(
+                      savingsGoals: const [], // Replace with shared or injected list if needed
+                      onAddGoal: (name, amount, date) {},
+                      onUpdateSavedAmount: (index, amount) {},
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
