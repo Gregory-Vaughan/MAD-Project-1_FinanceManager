@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'database_helper.dart';
 import 'models/transaction.dart';
 import 'models/savings_goal.dart';
+import 'package:fl_chart/fl_chart.dart';
+
 
 void main() {
   runApp(const MaterialApp(home: DashboardScreen()));
@@ -322,7 +324,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
               setState(() {
                 if (isEditing) {
-                  final goal = widget.savingsGoals[editIndex!];
+                  final goal = widget.savingsGoals[editIndex];
                   goal.name = name;
                   goal.targetAmount = amount;
                   goal.targetDate = _selectedDate;
@@ -508,6 +510,15 @@ class DashboardScreen extends StatelessWidget {
                 );
               },
             ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.assessment),
+              label: const Text('View Reports'),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => ReportsScreen()),
+                );
+              },
+            ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               icon: const Icon(Icons.pie_chart),
@@ -604,6 +615,125 @@ class CategoryTrackingScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+// ---------------------- Reports Window ----------------------
+
+
+class ReportsScreen extends StatelessWidget {
+  const ReportsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final db = DatabaseHelper();
+    final totalIncome = db.transactions.where((tx) => tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
+    final totalExpenses = db.transactions.where((tx) => !tx.isIncome).fold(0.0, (sum, tx) => sum + tx.amount);
+
+    final Map<String, double> categorySpending = {};
+    for (var tx in db.transactions.where((t) => !t.isIncome)) {
+      categorySpending[tx.category] = (categorySpending[tx.category] ?? 0) + tx.amount;
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Financial Reports')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
+          children: [
+            const Text("Income vs Expenses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  barGroups: [
+                    BarChartGroupData(x: 0, barRods: [
+                      BarChartRodData(toY: totalIncome, color: Colors.green, width: 20),
+                    ]),
+                    BarChartGroupData(x: 1, barRods: [
+                      BarChartRodData(toY: totalExpenses, color: Colors.red, width: 20),
+                    ]),
+                  ],
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 42,
+                        getTitlesWidget: (value, meta) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Text("\$${value.toInt()}", style: const TextStyle(fontSize: 10)),
+                          );
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          return Text(value == 0 ? 'Income' : 'Expenses', style: const TextStyle(fontSize: 12));
+                        },
+                      ),
+                    ),
+                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.withOpacity(0.3),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  maxY: (totalIncome > totalExpenses ? totalIncome : totalExpenses) * 1.2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            const Text("Spending by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 200,
+              child: PieChart(
+                PieChartData(
+                  sections: categorySpending.entries.map((entry) {
+                    final index = categorySpending.keys.toList().indexOf(entry.key);
+                    final color = Colors.primaries[index % Colors.primaries.length];
+                    return PieChartSectionData(
+                      value: entry.value,
+                      title: '${entry.key} (\$${entry.value.toStringAsFixed(0)})',
+                      color: color,
+                      radius: 60,
+                      titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
+                    );
+                  }).toList(),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 40,
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            const Text("Savings Goals Progress", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            ...db.savingsGoals.map((goal) {
+              final percent = (goal.savedAmount / goal.targetAmount * 100).clamp(0, 100);
+              final isComplete = goal.savedAmount >= goal.targetAmount;
+              return ListTile(
+                title: Text(goal.name),
+                subtitle: Text("Saved: \$${goal.savedAmount.toStringAsFixed(2)} / \$${goal.targetAmount.toStringAsFixed(2)}"),
+                trailing: Text(
+                  isComplete ? "✅" : "${percent.toStringAsFixed(0)}%",
+                  style: TextStyle(color: isComplete ? Colors.green : Colors.blue),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 }
