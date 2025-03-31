@@ -522,6 +522,10 @@ class DashboardScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 20),
+
+            //Image.asset(assets/1st gif),
+
+
             ElevatedButton.icon(
               icon: const Icon(Icons.savings),
               label: const Text('Savings Goals'),
@@ -543,6 +547,9 @@ class DashboardScreen extends StatelessWidget {
                 );
               },
             ),
+
+            //Image.asset(assets/2nd gif),
+
             ElevatedButton.icon(
               icon: const Icon(Icons.assessment),
               label: const Text('View Reports'),
@@ -553,6 +560,9 @@ class DashboardScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 20),
+
+            //Image.asset(assets/3rd gif),
+
             ElevatedButton.icon(
               icon: const Icon(Icons.pie_chart),
               label: const Text('Category Tracking'),
