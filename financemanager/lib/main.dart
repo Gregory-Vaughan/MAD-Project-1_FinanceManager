@@ -791,7 +791,7 @@ class ReportsScreen extends StatelessWidget {
                       title: '${entry.key} (\$${entry.value.toStringAsFixed(0)})',
                       color: color,
                       radius: 60,
-                      titleStyle: const TextStyle(fontSize: 12, fontFamily: 'Arial Narrow', color: Colors.white),
+                      titleStyle: const TextStyle(fontSize: 12, fontFamily: 'Arial Narrow', color: Colors.black),
                     );
                   }).toList(),
                   sectionsSpace: 2,
