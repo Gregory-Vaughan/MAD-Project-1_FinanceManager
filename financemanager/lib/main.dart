@@ -6,8 +6,37 @@ import 'models/savings_goal.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 
-void main() {
+void main() 
+{
   runApp(const MaterialApp(home: DashboardScreen()));
+  /*
+   runApp(MaterialApp
+   (
+    theme: ThemeData(
+      scaffoldBackgroundColor: Colors.green, 
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.yellow, // Yellow background
+          foregroundColor: Colors.black,  // Black text
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData
+      (
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.black, // Black text
+          backgroundColor: Colors.yellow, // Yellow button
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Colors.yellow, // Yellow FAB
+        foregroundColor: Colors.black, // Black icon/text
+      ),
+      fontFamily: 'Roboto', // Default font for app
+    ),
+    home: const DashboardScreen(),
+  ));
+}
+  */
 }
 
 // ---------------------- Main Screen ----------------------
@@ -40,7 +69,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
       category: _selectedCategory!,
       date: _selectedDate,
       note: _noteController.text,
-      isIncome: _isIncome!,
+      isIncome: _isIncome!,q
     );
 
     setState(() {
