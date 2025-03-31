@@ -9,35 +9,34 @@ import 'package:fl_chart/fl_chart.dart';
 void main() 
 {
   runApp(const MaterialApp(home: DashboardScreen()));
-  /*
+  
    runApp(MaterialApp
    (
     theme: ThemeData(
       scaffoldBackgroundColor: Colors.green, 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.yellow, // Yellow background
-          foregroundColor: Colors.black,  // Black text
+          backgroundColor: Colors.yellow,
+          foregroundColor: Colors.black, 
         ),
       ),
       textButtonTheme: TextButtonThemeData
       (
         style: TextButton.styleFrom(
-          foregroundColor: Colors.black, // Black text
-          backgroundColor: Colors.yellow, // Yellow button
+          foregroundColor: Colors.black,
+          backgroundColor: Colors.yellow,
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Colors.yellow, // Yellow FAB
-        foregroundColor: Colors.black, // Black icon/text
+        backgroundColor: Colors.yellow,
+        foregroundColor: Colors.black, 
       ),
-      fontFamily: 'Roboto', // Default font for app
+      fontFamily: 'Roboto', 
     ),
     home: const DashboardScreen(),
   ));
 }
-  */
-}
+  
 
 // ---------------------- Main Screen ----------------------
 class IncomeExpenseTracker extends StatefulWidget {
