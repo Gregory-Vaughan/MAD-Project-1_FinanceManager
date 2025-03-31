@@ -439,7 +439,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Savings Goals")),
-      body: savingsGoals.isEmpty
+      body: Container(
+      color: Colors.teal[100],
+      child: savingsGoals.isEmpty
           ? const Center(child: Text("No savings goals added."))
           : ListView.builder(
               itemCount: savingsGoals.length,
@@ -489,6 +491,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                 );
               },
             ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddGoalDialog(),
         child: const Icon(Icons.add),
