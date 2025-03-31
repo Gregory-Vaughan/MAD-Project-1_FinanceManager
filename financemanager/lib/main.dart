@@ -68,7 +68,7 @@ class _IncomeExpenseTrackerState extends State<IncomeExpenseTracker> {
       category: _selectedCategory!,
       date: _selectedDate,
       note: _noteController.text,
-      isIncome: _isIncome!,q
+      isIncome: _isIncome!,
     );
 
     setState(() {
@@ -206,7 +206,7 @@ void _navigateToSavingsGoals(BuildContext context) {
                       style: TextStyle(
                           color: netBalance >= 0 ? Colors.green : Colors.red,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18
+                          fontSize: 18,
                           fontFamily: 'Courier',
                           ),
                           
@@ -629,13 +629,19 @@ class CategoryTrackingScreen extends StatelessWidget {
                 Expanded(
                   child: ListView(
                     children: [
-                      const Text("Expenses by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow'),
+                      const Text(
+                        "Expenses by Category",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow'),
+                      ),
                       ...expenseCategories.entries.map((e) => ListTile(
                             title: Text(e.key),
                             trailing: Text("- \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.red)),
                           )),
                       const SizedBox(height: 16),
-                      const Text("Income by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow'))),
+                      const Text(
+                        "Income by Category",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow'),
+                      ),
                       ...incomeCategories.entries.map((e) => ListTile(
                             title: Text(e.key),
                             trailing: Text("+ \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.green)),
