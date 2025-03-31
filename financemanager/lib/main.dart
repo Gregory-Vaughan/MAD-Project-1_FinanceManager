@@ -139,7 +139,8 @@ void _navigateToSavingsGoals(BuildContext context) {
       appBar: AppBar(
         title: const Text('Income & Expense Tracker'),
       ),
-      body: Padding(
+      body: Container(
+        color: Colors.pink[100],
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -649,7 +650,8 @@ class CategoryTrackingScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(title: const Text("Category Tracking")),
-          body: Padding(
+          body: Container(
+            color: Colors.orange[100],
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -717,7 +719,8 @@ class ReportsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Financial Reports')),
-      body: Padding(
+      body: Container(
+        color: Colors.lightGreen[100],
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
