@@ -523,7 +523,7 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            //Image.asset(assets/1st gif),
+            Image.asset("assets/piggy.png", height: 120), 
 
 
             ElevatedButton.icon(
