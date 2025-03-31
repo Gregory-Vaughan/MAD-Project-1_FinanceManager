@@ -207,6 +207,7 @@ void _navigateToSavingsGoals(BuildContext context) {
                           color: netBalance >= 0 ? Colors.green : Colors.red,
                           fontWeight: FontWeight.bold,
                           fontSize: 18),
+                          //fontFamily: 'Courier',
                     ),
                   ],
                 ),
@@ -227,6 +228,7 @@ void _navigateToSavingsGoals(BuildContext context) {
                               child: Text(
                                 tx.isIncome ? '+' : '-',
                                 style: const TextStyle(color: Colors.white),
+                                 //fontFamily: 'Courier', 
                               ),
                             ),
                             title: Text('${tx.category} - \$${tx.amount.toStringAsFixed(2)}'),
@@ -460,6 +462,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                           style: TextStyle(
                             color: isCompleted ? Colors.green : Colors.blueGrey,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Courier', 
                           ),
                         ),
                       ],
@@ -624,13 +627,13 @@ class CategoryTrackingScreen extends StatelessWidget {
                 Expanded(
                   child: ListView(
                     children: [
-                      const Text("Expenses by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text("Expenses by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow')),
                       ...expenseCategories.entries.map((e) => ListTile(
                             title: Text(e.key),
                             trailing: Text("- \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.red)),
                           )),
                       const SizedBox(height: 16),
-                      const Text("Income by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text("Income by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow'))),
                       ...incomeCategories.entries.map((e) => ListTile(
                             title: Text(e.key),
                             trailing: Text("+ \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.green)),
@@ -669,7 +672,7 @@ class ReportsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            const Text("Income vs Expenses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Income vs Expenses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow')),
             const SizedBox(height: 10),
             SizedBox(
               height: 200,
@@ -692,7 +695,7 @@ class ReportsScreen extends StatelessWidget {
                         getTitlesWidget: (value, meta) {
                           return Padding(
                             padding: const EdgeInsets.only(right: 8.0),
-                            child: Text("\$${value.toInt()}", style: const TextStyle(fontSize: 10)),
+                            child: Text("\$${value.toInt()}", style: const TextStyle(fontSize: 10, fontFamily: 'Arial Narrow')),
                           );
                         },
                       ),
@@ -701,7 +704,7 @@ class ReportsScreen extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          return Text(value == 0 ? 'Income' : 'Expenses', style: const TextStyle(fontSize: 12));
+                          return Text(value == 0 ? 'Income' : 'Expenses', style: const TextStyle(fontSize: 12, fontFamily: 'Arial Narrow'));
                         },
                       ),
                     ),
@@ -722,7 +725,7 @@ class ReportsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            const Text("Spending by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Spending by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow')),
             const SizedBox(height: 10),
             SizedBox(
               height: 200,
@@ -736,7 +739,7 @@ class ReportsScreen extends StatelessWidget {
                       title: '${entry.key} (\$${entry.value.toStringAsFixed(0)})',
                       color: color,
                       radius: 60,
-                      titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
+                      titleStyle: const TextStyle(fontSize: 12, fontFamily: 'Arial Narrow', color: Colors.white),
                     );
                   }).toList(),
                   sectionsSpace: 2,
@@ -745,7 +748,7 @@ class ReportsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            const Text("Savings Goals Progress", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text("Savings Goals Progress", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), /*fontFamily: 'Arial Narrow')*/),
             const SizedBox(height: 10),
             ...db.savingsGoals.map((goal) {
               final percent = (goal.savedAmount / goal.targetAmount * 100).clamp(0, 100);
