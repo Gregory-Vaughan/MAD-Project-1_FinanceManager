@@ -756,7 +756,7 @@ class ReportsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            const Text("Savings Goals Progress", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), /*fontFamily: 'Arial Narrow')*/),
+            const Text("Savings Goals Progress", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
             const SizedBox(height: 10),
             ...db.savingsGoals.map((goal) {
               final percent = (goal.savedAmount / goal.targetAmount * 100).clamp(0, 100);
