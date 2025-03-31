@@ -507,79 +507,93 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Welcome to Finance Manager')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton.icon(
-              icon: const Icon(Icons.account_balance_wallet),
-              label: const Text('Income & Expense Tracker'),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const IncomeExpenseTracker()),
-                );
-              },
+            // Income & Expense Tracker
+            Column(
+              children: [
+                Image.asset("assets/income_expense.gif", height: 120),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.account_balance_wallet),
+                  label: const Text('Income & Expense Tracker'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const IncomeExpenseTracker()),
+                    );
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-            Image.asset("assets/corgi.png", height: 120), 
-            
-
-
-            ElevatedButton.icon(
-              icon: const Icon(Icons.savings),
-              label: const Text('Savings Goals'),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SavingsGoalsScreen(
-                      savingsGoals: db.savingsGoals,
-                      onAddGoal: (name, amount, date) {
-                        db.addSavingsGoal(SavingsGoal(
-                          name: name,
-                          targetAmount: amount,
-                          targetDate: date,
-                        ));
-                      },
-                      onUpdateSavedAmount: db.updateSavedAmount,
-                    ),
-                  ),
-                );
-              },
+            // Savings Goals
+            Column(
+              children: [
+                Image.asset("assets/piggy2.gif", height: 120),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.savings),
+                  label: const Text('Savings Goals'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SavingsGoalsScreen(
+                          savingsGoals: db.savingsGoals,
+                          onAddGoal: (name, amount, date) {
+                            db.addSavingsGoal(SavingsGoal(
+                              name: name,
+                              targetAmount: amount,
+                              targetDate: date,
+                            ));
+                          },
+                          onUpdateSavedAmount: db.updateSavedAmount,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-            Image.asset("assets/piggy.png", height: 120), 
-            //Image.asset("assets/piggy2.gif", height: 120, repeat: ImageRepeat.noRepeat),
+            const SizedBox(height: 30),
 
-            ElevatedButton.icon(
-              icon: const Icon(Icons.assessment),
-              label: const Text('View Reports'),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => ReportsScreen()),
-                );
-              },
+            // Reports
+            Column(
+              children: [
+                Image.asset("assets/report.gif", height: 120),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.assessment),
+                  label: const Text('View Reports'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => ReportsScreen()),
+                    );
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-            Image.asset("assets/report.png", height: 120), 
-
-            ElevatedButton.icon(
-              icon: const Icon(Icons.pie_chart),
-              label: const Text('Category Tracking'),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => CategoryTrackingScreen(
-                      transactions: db.transactions,
-                    ),
-                  ),
-                );
-              },
+            // Category Tracking
+            Column(
+              children: [
+                Image.asset("assets/scales.gif", height: 120),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.pie_chart),
+                  label: const Text('Category Tracking'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => CategoryTrackingScreen(
+                          transactions: db.transactions,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-
-        Image.asset("assets/scales.png", height: 120), 
-
           ],
         ),
       ),
