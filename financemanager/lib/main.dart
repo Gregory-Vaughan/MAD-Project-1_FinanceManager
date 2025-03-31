@@ -689,7 +689,7 @@ class ReportsScreen extends StatelessWidget {
                   alignment: BarChartAlignment.spaceAround,
                   barGroups: [
                     BarChartGroupData(x: 0, barRods: [
-                      BarChartRodData(toY: totalIncome, color: Colors.green, width: 20),
+                      BarChartRodData(toY: totalIncome, color: Colors.blue, width: 20),
                     ]),
                     BarChartGroupData(x: 1, barRods: [
                       BarChartRodData(toY: totalExpenses, color: Colors.red, width: 20),
