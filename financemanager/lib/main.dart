@@ -523,7 +523,8 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            Image.asset("assets/piggy.png", height: 120), 
+            Image.asset("assets/corgi.png", height: 120), 
+            
 
 
             ElevatedButton.icon(
@@ -547,8 +548,8 @@ class DashboardScreen extends StatelessWidget {
                 );
               },
             ),
-
-            //Image.asset(assets/2nd gif),
+            Image.asset("assets/piggy.png", height: 120), 
+            //Image.asset("assets/piggy2.gif", height: 120, repeat: ImageRepeat.noRepeat),
 
             ElevatedButton.icon(
               icon: const Icon(Icons.assessment),
@@ -561,7 +562,7 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            //Image.asset(assets/3rd gif),
+            Image.asset("assets/report.png", height: 120), 
 
             ElevatedButton.icon(
               icon: const Icon(Icons.pie_chart),
@@ -576,6 +577,9 @@ class DashboardScreen extends StatelessWidget {
                 );
               },
             ),
+
+        Image.asset("assets/scales.png", height: 120), 
+
           ],
         ),
       ),

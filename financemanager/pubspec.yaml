@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   intl: ^0.18.1
   fl_chart: ^0.70.0
+  flutter_animate: ^4.2.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -65,10 +66,13 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/piggy.png
-
-   # - assets/gif2.gif
-   # - assets/gif3.gif
-
+    - assets/scales.png
+    - assets/track.png
+    - assets/report.png
+    - assets/chuck.gif
+    - assets/piggy2.gif
+    - assets/corgi.gif
+    - assets/scales.gif
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
