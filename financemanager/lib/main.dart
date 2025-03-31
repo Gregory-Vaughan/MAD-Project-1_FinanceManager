@@ -512,6 +512,16 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const Text(
+              "Tools:",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+                textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
             // Income & Expense Tracker
             Column(
               children: [
