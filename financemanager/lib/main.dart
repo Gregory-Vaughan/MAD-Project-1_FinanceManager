@@ -206,8 +206,10 @@ void _navigateToSavingsGoals(BuildContext context) {
                       style: TextStyle(
                           color: netBalance >= 0 ? Colors.green : Colors.red,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18),
-                          //fontFamily: 'Courier',
+                          fontSize: 18
+                          fontFamily: 'Courier',
+                          ),
+                          
                     ),
                   ],
                 ),
@@ -627,7 +629,7 @@ class CategoryTrackingScreen extends StatelessWidget {
                 Expanded(
                   child: ListView(
                     children: [
-                      const Text("Expenses by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow')),
+                      const Text("Expenses by Category", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Arial Narrow'),
                       ...expenseCategories.entries.map((e) => ListTile(
                             title: Text(e.key),
                             trailing: Text("- \$${e.value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.red)),
